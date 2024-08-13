@@ -1,23 +1,55 @@
-import { sequelize } from "../db";
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../db');
 
-class Pet extends Model {}
-
-Pet.init(
-  {
-    // Model attributes are defined here
+const Pet = sequelize.define('Pet', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+    },
     type: {
-      type: DataTypes.STRING,
-      allowNull: false,
+        type: DataTypes.ENUM('Cat', 'Dog'),
+        allowNull: false,
+    },
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    age: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    gender: {
+        type: DataTypes.ENUM('Male', 'Female'),
+        allowNull: false,
     },
     color: {
-      type: DataTypes.STRING,
-      allowNull: false,
+        type: DataTypes.STRING,
+        allowNull: false,
     },
-    
-  },
-  {
-    // Other model options go here
-    sequelize, // We need to pass the connection instance
-    modelName: 'Pet', // We need to choose the model name
-  },
-);
+    description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
+    adoptionStatus: {
+        type: DataTypes.ENUM('Available', 'Adopted'),
+        allowNull: false,
+        defaultValue: 'Available',
+    },
+    localization: {
+        type: DataTypes.GEOMETRY,
+        allowNull: false
+    }
+}, {
+    tableName: 'pets',
+    timestamps: true, // Adiciona createdAt e updatedAt automaticamente
+});
+
+async function sincronizar() {
+    await Pet.sync();
+    console.log("Sincronizado");
+}
+
+sincronizar();
+
+module.exports = Pet;
