@@ -44,8 +44,18 @@ class PetController {
         }
     }
 
-    static delete(id) {
+    static async delete(req, res) {
+        try {
+            const pet = await Pet.destroy({
+                where: {
+                    id: req.params.id
+                }
+            })
 
+            res.status(200).json(pet);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
     }
 }
 module.exports = { PetController }
