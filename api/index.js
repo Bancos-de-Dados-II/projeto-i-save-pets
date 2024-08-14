@@ -2,8 +2,11 @@ const express = require('express')
 const { PetController } = require('./controllers/PetController')
 const { sequelize } = require('./db')
 const { Pet } = require('./models/Pet')
+const cors = require('cors');
+
 const app = express()
 app.use(express.json());
+app.use(cors({ origin: '*' }));
 
 app.post('/register', function (req, res) {
     PetController.create(req, res)
