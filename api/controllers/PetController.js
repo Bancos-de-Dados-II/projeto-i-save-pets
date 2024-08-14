@@ -11,8 +11,14 @@ class PetController {
         }
     }
 
-    static get() {
+    static async get(req, res) {
+        try {
+            const allPets = await Pet.findAll()
 
+            res.status(200).json(allPets);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
     }
 
     static put(data) {
