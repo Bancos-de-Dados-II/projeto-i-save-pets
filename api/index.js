@@ -12,6 +12,10 @@ app.post('/pet', function (req, res) {
     PetController.create(req, res)
 })
 
+app.get('/pets', function (req, res) {
+    PetController.get(req, res)
+})
+
 conectar = async () => {
     try {
         await sequelize.authenticate();
