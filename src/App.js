@@ -20,11 +20,9 @@ const icon = L.icon({
 function MyComponent({ saveMarkers, coords }) {
   const map2 = useMap();
   map2.setView(coords ?? [51.505, -0.09], 12);
-
-  const map = useMapEvents({
+  useMapEvents({
     click: (e) => {
       const { lat, lng } = e.latlng;
-      L.marker([lat, lng], { icon }).addTo(map);
       saveMarkers([lat, lng]);
     }
   });
@@ -112,9 +110,8 @@ function App() {
   useEffect( () => {
     Promise.all([getUserLocation(), fetch()]).then(() => {
       setIsLoading(false)
-    })
-    // getUserLocation();
-    // fetch();
+    });
+    
   }, []);
 
   const handleAddPet = async (data) => {
