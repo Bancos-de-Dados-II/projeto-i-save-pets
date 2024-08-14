@@ -2,14 +2,30 @@ const express = require('express')
 const { PetController } = require('./controllers/PetController')
 const { sequelize } = require('./db')
 const { Pet } = require('./models/Pet')
+const cors = require('cors');
+
 const app = express()
 app.use(express.json());
+app.use(cors({ origin: '*' }));
 
-app.post('/register', function (req, res) {
+
+app.post('/pet', function (req, res) {
     PetController.create(req, res)
 })
 
-conectar = async () => {
+app.get('/pets', function (req, res) {
+    PetController.get(req, res)
+})
+
+app.put('/pet/:id', function (req, res) {
+    PetController.put(req, res)
+})
+
+app.delete('/pet/:id', function (req, res) {
+    PetController.delete(req, res)
+})
+
+const conectar = async () => {
     try {
         await sequelize.authenticate();
         Pet.sync()

@@ -42,7 +42,7 @@ const Pet = sequelize.define('Pet', {
     }
 }, {
     tableName: 'pets',
-    timestamps: true, // Adiciona createdAt e updatedAt automaticamente
+    timestamps: true,
 });
 
 async function sincronizar() {
