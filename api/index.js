@@ -8,7 +8,7 @@ const app = express()
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 
-app.post('/register', function (req, res) {
+app.post('/pet', function (req, res) {
     PetController.create(req, res)
 })
 
