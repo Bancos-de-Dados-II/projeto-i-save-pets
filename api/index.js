@@ -8,6 +8,7 @@ const app = express()
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 
+
 app.post('/pet', function (req, res) {
     PetController.create(req, res)
 })
@@ -24,7 +25,7 @@ app.delete('/pet/:id', function (req, res) {
     PetController.delete(req, res)
 })
 
-conectar = async () => {
+const conectar = async () => {
     try {
         await sequelize.authenticate();
         Pet.sync()
