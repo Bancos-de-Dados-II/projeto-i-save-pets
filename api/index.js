@@ -20,6 +20,10 @@ app.put('/pet/:id', function (req, res) {
     PetController.put(req, res)
 })
 
+app.delete('/pet/:id', function (req, res) {
+    PetController.delete(req, res)
+})
+
 conectar = async () => {
     try {
         await sequelize.authenticate();
