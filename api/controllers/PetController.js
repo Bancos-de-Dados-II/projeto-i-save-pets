@@ -75,13 +75,16 @@ class PetController {
         try {
             let pet = {}
 
-            const { name, age, description, adoptionStatus, type } = req.body;
+            const { name, age, description, adoptionStatus, type, localization } = req.body;
 
             pet.name = name;
             pet.age = age;
             pet.description = description;
             pet.adoptionStatus = adoptionStatus;
             pet.type = type
+            if(localization) {
+                pet.localization = localization;
+            }
 
             await _Pet.findByIdAndUpdate(req.params.id, pet);
 

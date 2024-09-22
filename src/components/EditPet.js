@@ -21,11 +21,32 @@ function EditPet({ data, handleEditPet }) {
         });
     };
 
+    const handleChangeLongitude = (e) => {
+        const { value } = e.target;
+        setFormData({
+            ...formData,
+            localization: {
+                ...formData.localization,
+                coordinates: [parseFloat(value), formData.localization.coordinates[1]]
+            }
+        });
+    };
+
+    const handleChangeLatitude = (e) => {
+        const { value } = e.target;
+        setFormData({
+            ...formData,
+            localization: {
+                ...formData.localization,
+                coordinates: [formData.localization.coordinates[0], parseFloat(value)]
+            }
+        });
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         handleEditPet({ ...formData, id: data._id })
     };
-
 
     return (
         <Box p={3}>
@@ -118,16 +139,25 @@ function EditPet({ data, handleEditPet }) {
                             <MenuItem value="Adopted">Adopted</MenuItem>
                         </TextField>
                     </Grid>
-                    {/* <Grid item xs={12}>
+                    <Grid item xs={12} p={1}>
                         <TextField
                             fullWidth
-                            label="Localization"
-                            name="localization"
-                            value={formData.localization}
-                            onChange={handleChange}
+                            label="Longitude"
+                            name="localization.longitude"
+                            value={formData.localization.coordinates[0]}
+                            onChange={handleChangeLongitude}
                             required
                         />
-                    </Grid> */}
+
+                        <TextField
+                            fullWidth
+                            label="Latitude"
+                            name="localization.latitute"
+                            value={formData.localization.coordinates[1]}
+                            onChange={handleChangeLatitude}
+                            required
+                        />
+                    </Grid>
                     <Grid item xs={12}>
                         <Button variant="contained" color="primary" type="submit">
                             Submit
