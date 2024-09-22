@@ -1,8 +1,8 @@
 const express = require('express')
 const { PetController } = require('./controllers/PetController')
-const { sequelize } = require('./db')
-const { Pet } = require('./models/Pet')
 const cors = require('cors');
+
+require('./dbmongo')
 
 const app = express()
 app.use(express.json());
@@ -25,17 +25,11 @@ app.delete('/pet/:id', function (req, res) {
     PetController.delete(req, res)
 })
 
-const conectar = async () => {
-    try {
-        await sequelize.authenticate();
-        Pet.sync()
-        console.log('Connection has been established successfully.');
-    } catch (error) {
-        console.error('Unable to connect to the database:', error);
-    }
-}
+app.get('/search', function (req, res) {
+    PetController.search(req, res)
+})
+
 
 app.listen(3333, () => {
     console.log('Server is running on port 3333')
-    conectar()
 })

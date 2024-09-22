@@ -23,7 +23,7 @@ function EditPet({ data, handleEditPet }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        handleEditPet({ ...formData, id: data.id })
+        handleEditPet({ ...formData, id: data._id })
     };
 
 

@@ -1,21 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import { Icon } from 'leaflet';
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import MarkerCustom from './components/Marker';
 import axios from 'axios';
-import L from "leaflet";
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import AddPet from './components/AddPet';
-
-const icon = L.icon({
-  iconSize: [25, 41],
-  iconAnchor: [10, 41],
-  popupAnchor: [2, -40],
-  iconUrl: "https://unpkg.com/leaflet@1.6/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.6/dist/images/marker-shadow.png"
-});
+import { TextField } from '@mui/material';
+import { debounce } from 'lodash';
 
 function MyComponent({ saveMarkers, coords }) {
   const map2 = useMap();
@@ -57,6 +51,7 @@ function App() {
   });
 
   const [pets, setPets] = useState([]);
+  const [petsSearch, setPetsSearch] = useState([]);
   const [userLocation, setUserLocation] = useState(null)
   const [open, setOpen] = useState(false);
   const [marker, setMarker] = useState(null);
@@ -76,13 +71,11 @@ function App() {
           // save the geolocation coordinates in two variables
           const { latitude, longitude } = position.coords;
           // update the value of userlocation variable
-          console.log('geo => ', [latitude, longitude])
           setUserLocation([latitude, longitude]);
         },
         // if there was an error getting the users location
         (error) => {
           setUserLocation([51.505, -0.09]);
-          console.error('Error getting user location:', error);
         }
       );
     }
@@ -95,23 +88,31 @@ function App() {
 
   const fetch = async () => {
     const allPets = (await axios('http://localhost:3333/pets')).data
-    console.log('allPets => ', allPets)
-    setPets(allPets)
+    setPets(allPets.map(p => ({ ...p, id: p._id })))
   };
 
 
   const saveMarkers = (newMarkerCoords) => {
-    console.log('new marker => ', newMarkerCoords)
     handleOpen()
     setMarker(newMarkerCoords)
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect( () => {
+  useEffect(() => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        // setPosition({
+        //   latitude: position.coords.latitude,
+        //   longitude: position.coords.longitude,
+        // });
+      });
+    } else {
+      console.log("Geolocation is not available in your browser.");
+    }
     Promise.all([getUserLocation(), fetch()]).then(() => {
       setIsLoading(false)
     });
-    
+
   }, []);
 
   const handleAddPet = async (data) => {
@@ -130,58 +131,92 @@ function App() {
   }
 
   const handleEditPet = async (data) => {
-    console.log('edit pet ', data)
     await axios.put(`http://localhost:3333/pet/${data.id}`, data).then((response) => {
       alert('Pet atualizado com sucesso')
       fetch();
     })
   }
 
-  if(isLoading) {
-    return (
-      <>
-        <p>Carregando...</p>
-      </>
-    )
-  }
+  const fetchData = async (query) => {
+    await axios.get(`http://localhost:3333/search?name=${query}`).then((response) => {
+      if (response.status === 200 && response.data.length) {
+        const searchData = response.data.map(p => ({ ...p, id: p._id }));
+        alert(`Encontrados ${searchData.length} resultados.`)
+        setPetsSearch([...searchData]);
+      } else {
+        alert('Nenhum resultado encontrado.')
+        setPetsSearch([]);
+      }
+      setIsLoading(false)
+    })
+  };
+
+  const debouncedFetchData = useCallback(
+    debounce(fetchData, 1500),
+    []
+  );
+
+  const onSearch = ({ target }) => {
+    debouncedFetchData(target.value);
+  };
 
   return (
     <>
-      <MapContainer
-        center={userLocation}
-        style={{ width: "100%", height: "100vh" }}
-        scrollWheelZoom={true}
-        maxZoom={30}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        {pets.map((pet) => (
-          <MarkerCustom
-            icon={pet.type === 'Dog' ? dogIcon : catIcon}
-            data={pet}
-            handleRemovePet={handleRemovePet}
-            handleEditPet={handleEditPet}
-          />
-        ))}
-        <MyComponent saveMarkers={saveMarkers} coords={userLocation} />
-      </MapContainer>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
-            Adicionar Pet para adoção
-          </Typography>
-          <AddPet handleSubmit={handleAddPet} marker={marker} onClose={handleClose} />
-        </Box>
-      </Modal>
+      {isLoading ? (
+        <p>Carregando...</p>
+      ) : (
+        <>
+          <div style={{
+            position: 'absolute', top: 10, left: '40%', background: 'white', borderRadius: '1rem', width: '25rem',
+            display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem', zIndex: 999
+          }}>
+            <TextField
+              id="standard-basic"
+              label="Pesquisar"
+              variant="standard"
+              onChange={onSearch}
+            />
+          </div>
+          <MapContainer
+            center={userLocation}
+            style={{ width: "100%", height: "100vh", position: 'relative' }}
+            scrollWheelZoom={true}
+            maxZoom={30}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {(!!petsSearch.length ? petsSearch : pets).map((pet) => (
+              <MarkerCustom
+                key={pet.id || pet._id}
+                icon={pet.type === 'Dog' ? dogIcon : catIcon}
+                data={pet}
+                id={pet.id || pet._id}
+                handleRemovePet={handleRemovePet}
+                handleEditPet={handleEditPet}
+              />
+            ))}
+            <MyComponent saveMarkers={saveMarkers} coords={userLocation} />
+          </MapContainer>
+          <Modal
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description"
+          >
+            <Box sx={style}>
+              <Typography id="modal-modal-title" variant="h6" component="h2">
+                Adicionar Pet para adoção
+              </Typography>
+              <AddPet handleSubmit={handleAddPet} marker={marker} onClose={handleClose} />
+            </Box>
+          </Modal>
+        </>
+      )}
     </>
   );
+
 }
 
 export default App;

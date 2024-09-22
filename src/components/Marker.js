@@ -18,11 +18,10 @@ const style = {
     p: 4,
 };
 
-function MarkerCustom({ icon, data, handleRemovePet, handleEditPet }) {
+function MarkerCustom({ icon, data, handleRemovePet, handleEditPet, id }) {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-
 
     const editPet = async (data) => {
         await handleEditPet(data).then(() => {
@@ -45,7 +44,7 @@ function MarkerCustom({ icon, data, handleRemovePet, handleEditPet }) {
                                 size="small"
                                 variant="outlined"
                                 color="error"
-                                onClick={() => handleRemovePet(data.id)}
+                                onClick={() => handleRemovePet(data._id)}
                             >
                                 Excluir
                             </Button>
